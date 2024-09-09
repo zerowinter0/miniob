@@ -72,6 +72,7 @@ RC SetVariableExecutor::var_value_to_boolean(const Value &var_value, bool &bool_
       }
       rc = RC::VARIABLE_NOT_VALID;
     }
+    else if(var_value.attr_type()==AttrType::DATES)rc=RC::VARIABLE_NOT_VALID;
 
     return rc;
 }

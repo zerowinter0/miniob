@@ -46,6 +46,20 @@ int compare_float(void *arg1, void *arg2)
   return 0;
 }
 
+int compare_date(void *arg1, void *arg2)
+{
+  float v1  = *(float *)arg1;
+  float v2  = *(float *)arg2;
+  float cmp = v1 - v2;
+  if (cmp > EPSILON) {
+    return 1;
+  }
+  if (cmp < -EPSILON) {
+    return -1;
+  }
+  return 0;
+}
+
 int compare_string(void *arg1, int arg1_max_length, void *arg2, int arg2_max_length)
 {
   const char *s1     = (const char *)arg1;
