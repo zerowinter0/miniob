@@ -19,7 +19,6 @@ See the Mulan PSL v2 for more details. */
 #include "common/lang/sstream.h"
 #include "common/lang/string.h"
 #include "common/log/log.h"
-
 Value::Value(int val) { set_int(val); }
 
 Value::Value(float val) { set_float(val); }
@@ -191,7 +190,7 @@ void Value::set_date(const char *s)
     const int len=10;
     value_.pointer_value_ = new char[len + 1];
     length_               = len;
-    memcpy(value_.pointer_value_, s, len);
+    memcpy(value_.pointer_value_, s,10);
     value_.pointer_value_[len] = '\0';
   }
 }
@@ -212,6 +211,7 @@ void Value::set_value(const Value &value)
       set_boolean(value.get_boolean());
     } break;
     case AttrType::DATES:{
+
       set_date(value.get_string().c_str());
     } break;
     default: {

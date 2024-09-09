@@ -13,14 +13,11 @@ See the Mulan PSL v2 for more details. */
 #include "common/type/date_type.h"
 #include "common/value.h"
 
-bool check_legal_date(const std::string& date) {
-    if (date.size() != 10 || date[4] != '-' || date[7] != '-') {
-        return false;
-    }
-
+bool check_legal_date(std::string& date) {
     std::istringstream date_stream(date);
     int year, month, day;
     char dash;
+    std::string new_date="";
 
     if (!(date_stream >> year >> dash) || dash != '-') {
         return false;
@@ -59,7 +56,12 @@ bool check_legal_date(const std::string& date) {
             return false;
         }
     }
-
+    new_date+=std::to_string(year)+"-";
+    if(month<10)new_date+='0';
+    new_date+=std::to_string(month)+"-";
+    if(day<10)new_date+='0';
+    new_date+=std::to_string(day);
+    date=new_date;
     return true;
 }
 
@@ -72,10 +74,11 @@ int DateType::compare(const Value &left, const Value &right) const
 
 RC DateType::set_value_from_str(Value &val, const string &data) const
 {
-  if(!check_legal_date(data)){
+  std::string new_date=data;
+  if(!check_legal_date(new_date)){
     return RC::SCHEMA_FIELD_TYPE_MISMATCH;
   }
-  val.set_date(data.c_str());
+  val.set_date(new_date.c_str());
   return RC::SUCCESS;
 }
 
