@@ -19,7 +19,6 @@ See the Mulan PSL v2 for more details. */
 #include "common/lang/sstream.h"
 #include "common/lang/string.h"
 #include "common/log/log.h"
-
 Value::Value(int val) { set_int(val); }
 
 Value::Value(float val) { set_float(val); }
@@ -125,6 +124,10 @@ void Value::set_data(char *data, int length)
       value_.bool_value_ = *(int *)data != 0;
       length_            = length;
     } break;
+    case AttrType::DATES:{
+      length_=11;
+      set_string(data,11);
+    } break;
     default: {
       LOG_WARN("unknown data type: %d", attr_type_);
     } break;
@@ -175,6 +178,23 @@ void Value::set_string(const char *s, int len /*= 0*/)
   }
 }
 
+void Value::set_date(const char *s)
+{
+  reset();
+  attr_type_ = AttrType::DATES;
+  if (s == nullptr) {
+    value_.pointer_value_ = nullptr;
+    length_               = 0;
+  } else {
+    own_data_ = true;
+    const int len=10;
+    value_.pointer_value_ = new char[len + 1];
+    length_               = len;
+    memcpy(value_.pointer_value_, s,10);
+    value_.pointer_value_[len] = '\0';
+  }
+}
+
 void Value::set_value(const Value &value)
 {
   switch (value.attr_type_) {
@@ -189,6 +209,10 @@ void Value::set_value(const Value &value)
     } break;
     case AttrType::BOOLEANS: {
       set_boolean(value.get_boolean());
+    } break;
+    case AttrType::DATES:{
+
+      set_date(value.get_string().c_str());
     } break;
     default: {
       ASSERT(false, "got an invalid value type");
@@ -210,6 +234,9 @@ const char *Value::data() const
 {
   switch (attr_type_) {
     case AttrType::CHARS: {
+      return value_.pointer_value_;
+    } break;
+    case AttrType::DATES: {
       return value_.pointer_value_;
     } break;
     default: {
@@ -251,6 +278,10 @@ int Value::get_int() const
     case AttrType::BOOLEANS: {
       return (int)(value_.bool_value_);
     }
+    case AttrType::DATES:{
+      LOG_TRACE("date type can't be coverned to number");
+      return 0;
+    }
     default: {
       LOG_WARN("unknown data type. type=%d", attr_type_);
       return 0;
@@ -279,6 +310,10 @@ float Value::get_float() const
     case AttrType::BOOLEANS: {
       return float(value_.bool_value_);
     } break;
+    case AttrType::DATES:{
+      LOG_TRACE("date type can't be coverned to number");
+      return 0;
+    }
     default: {
       LOG_WARN("unknown data type. type=%d", attr_type_);
       return 0;
@@ -320,6 +355,10 @@ bool Value::get_boolean() const
     case AttrType::BOOLEANS: {
       return value_.bool_value_;
     } break;
+    case AttrType::DATES:{
+      LOG_TRACE("date type can't be coverned to number");
+      return 0;
+    }
     default: {
       LOG_WARN("unknown data type. type=%d", attr_type_);
       return false;

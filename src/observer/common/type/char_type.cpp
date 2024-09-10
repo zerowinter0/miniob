@@ -15,11 +15,19 @@ See the Mulan PSL v2 for more details. */
 
 int CharType::compare(const Value &left, const Value &right) const
 {
-  ASSERT(left.attr_type() == AttrType::CHARS && right.attr_type() == AttrType::CHARS, "invalid type");
-  return common::compare_string(
+  ASSERT((left.attr_type() == AttrType::DATES||left.attr_type() == AttrType::CHARS) && (right.attr_type() == AttrType::DATES||right.attr_type() == AttrType::CHARS), "invalid type");
+  int res;
+  if(left.attr_type()==AttrType::DATES||right.attr_type()==AttrType::DATES){
+    char* l_date=date_fix::padZeroForSingleDigit(left.value_.pointer_value_);
+    char* r_date=date_fix::padZeroForSingleDigit(right.value_.pointer_value_);
+    res=common::compare_string(l_date,10,r_date,10);
+    delete[] l_date;
+    delete[] r_date;
+  }
+  else res=common::compare_string(
       (void *)left.value_.pointer_value_, left.length_, (void *)right.value_.pointer_value_, right.length_);
+  return res;
 }
-
 RC CharType::set_value_from_str(Value &val, const string &data) const
 {
   val.set_string(data.c_str());
@@ -29,6 +37,12 @@ RC CharType::set_value_from_str(Value &val, const string &data) const
 RC CharType::cast_to(const Value &val, AttrType type, Value &result) const
 {
   switch (type) {
+    case AttrType::DATES:{
+      if(!date_fix::check_legal_date(val.data()))return RC::SCHEMA_FIELD_TYPE_MISMATCH;
+        char* new_data=date_fix::padZeroForSingleDigit(val.data());
+        result.set_date(new_data);
+        delete[] new_data;
+      }break;
     default: return RC::UNIMPLEMENTED;
   }
   return RC::SUCCESS;
@@ -36,7 +50,7 @@ RC CharType::cast_to(const Value &val, AttrType type, Value &result) const
 
 int CharType::cast_cost(AttrType type)
 {
-  if (type == AttrType::CHARS) {
+  if (type == AttrType::CHARS||type==AttrType::DATES) {
     return 0;
   }
   return INT32_MAX;

@@ -18,6 +18,7 @@ See the Mulan PSL v2 for more details. */
 #include "common/lang/memory.h"
 #include "common/type/attr_type.h"
 #include "common/type/data_type.h"
+#include "common/type/date_type.h"
 
 /**
  * @brief 属性的值
@@ -34,6 +35,7 @@ public:
   friend class FloatType;
   friend class BooleanType;
   friend class CharType;
+  friend class DateType;
 
   Value() = default;
 
@@ -108,12 +110,12 @@ public:
   float  get_float() const;
   string get_string() const;
   bool   get_boolean() const;
-
 private:
   void set_int(int val);
   void set_float(float val);
   void set_string(const char *s, int len = 0);
   void set_string_from_other(const Value &other);
+  void set_date(const char *s);
 
 private:
   AttrType attr_type_ = AttrType::UNDEFINED;
@@ -129,4 +131,78 @@ private:
 
   /// 是否申请并占有内存, 目前对于 CHARS 类型 own_data_ 为true, 其余类型 own_data_ 为false
   bool own_data_ = false;
+};
+
+
+class date_fix{
+  public:
+  static bool check_legal_date(const char* date) {
+      std::string date_str=date;
+      std::istringstream date_stream(date_str);
+      int year, month, day;
+      char dash;
+
+      if (!(date_stream >> year >> dash) || dash != '-') {
+          return false;
+      }
+
+      if (!(date_stream >> month >> dash) || dash != '-') {
+          return false;
+      }
+
+      if (!(date_stream >> day)) {
+          return false;
+      }
+
+      if (!(date_stream.eof())) {
+          return false;
+      }
+
+      if (month < 1 || month > 12) {
+          return false;
+      }
+
+      // 定义每个月的天数数组
+      const int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+      auto is_leap_year = [](int y) -> bool {
+          return (y % 400 == 0) || ((y % 4 == 0) && (y % 100 != 0));
+      };
+
+      // 调整二月的天数以适应闰年情况
+      if (is_leap_year(year) && month == 2) {
+          if (day < 1 || day > 29) {
+              return false;
+          }
+      } else {
+          if (day < 1 || (month == 2 && day > 28) || (month != 2 && day > days_in_month[month - 1])) {
+              return false;
+          }
+      }
+      return true;
+  }
+  static char* padZeroForSingleDigit(const char* inputDate) {
+      // 检查输入是否为空
+      if (inputDate == NULL) return NULL;
+      char* paddedDate = new char[11];
+      int cnt=0;
+      int cur=0;
+      for(int i=0;i<3;i++){
+        while(1){
+          if(inputDate[cnt]=='\0'||inputDate[cnt]=='-')break;
+          paddedDate[cur++]=inputDate[cnt];
+          cnt++;
+        }
+        cnt++;
+        if((i==1&&cur==6)||(i==2&&cur==9)){
+          paddedDate[cur]=paddedDate[cur-1];
+          paddedDate[cur-1]='0';
+          cur++;
+        }
+        paddedDate[cur++]='-';
+      }
+      paddedDate[cur-1]='\0';
+      if(!check_legal_date(paddedDate))return nullptr;
+      return paddedDate;
+  }
 };
