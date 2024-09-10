@@ -136,6 +136,51 @@ private:
 
 class date_fix{
   public:
+  static bool check_legal_date(const char* date) {
+      std::string date_str=date;
+      std::istringstream date_stream(date_str);
+      int year, month, day;
+      char dash;
+
+      if (!(date_stream >> year >> dash) || dash != '-') {
+          return false;
+      }
+
+      if (!(date_stream >> month >> dash) || dash != '-') {
+          return false;
+      }
+
+      if (!(date_stream >> day)) {
+          return false;
+      }
+
+      if (!(date_stream.eof())) {
+          return false;
+      }
+
+      if (month < 1 || month > 12) {
+          return false;
+      }
+
+      // 定义每个月的天数数组
+      const int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+      auto is_leap_year = [](int y) -> bool {
+          return (y % 400 == 0) || ((y % 4 == 0) && (y % 100 != 0));
+      };
+
+      // 调整二月的天数以适应闰年情况
+      if (is_leap_year(year) && month == 2) {
+          if (day < 1 || day > 29) {
+              return false;
+          }
+      } else {
+          if (day < 1 || (month == 2 && day > 28) || (month != 2 && day > days_in_month[month - 1])) {
+              return false;
+          }
+      }
+      return true;
+  }
   static char* padZeroForSingleDigit(const char* inputDate) {
       // 检查输入是否为空
       if (inputDate == NULL) return NULL;
@@ -157,6 +202,7 @@ class date_fix{
         paddedDate[cur++]='-';
       }
       paddedDate[cur-1]='\0';
+      if(!check_legal_date(paddedDate))return nullptr;
       return paddedDate;
   }
 };
