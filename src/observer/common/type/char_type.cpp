@@ -25,34 +25,12 @@ RC CharType::set_value_from_str(Value &val, const string &data) const
   val.set_string(data.c_str());
   return RC::SUCCESS;
 }
-char* padZeroForSingleDigit(const char* inputDate) {
-    // 检查输入是否为空
-    if (inputDate == NULL) return NULL;
-    char* paddedDate = new char[11];
-    int cnt=0;
-    int cur=0;
-    for(int i=0;i<3;i++){
-      while(1){
-        if(inputDate[cnt]=='\0'||inputDate[cnt]=='-')break;
-        paddedDate[cur++]=inputDate[cnt];
-        cnt++;
-      }
-      cnt++;
-      if((i==1&&cur==6)||(i==2&&cur==9)){
-        paddedDate[cur]=paddedDate[cur-1];
-        paddedDate[cur-1]='0';
-        cur++;
-      }
-      paddedDate[cur++]='-';
-    }
-    paddedDate[cur-1]='\0';
-    return paddedDate;
-}
+
 RC CharType::cast_to(const Value &val, AttrType type, Value &result) const
 {
   switch (type) {
     case AttrType::DATES:{
-        char* new_data=padZeroForSingleDigit(val.data());
+        char* new_data=date_fix::padZeroForSingleDigit(val.data());
         result.set_date(new_data);
         delete[] new_data;
       }break;

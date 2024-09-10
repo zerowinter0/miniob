@@ -110,7 +110,6 @@ public:
   float  get_float() const;
   string get_string() const;
   bool   get_boolean() const;
-
 private:
   void set_int(int val);
   void set_float(float val);
@@ -132,4 +131,32 @@ private:
 
   /// 是否申请并占有内存, 目前对于 CHARS 类型 own_data_ 为true, 其余类型 own_data_ 为false
   bool own_data_ = false;
+};
+
+
+class date_fix{
+  public:
+  static char* padZeroForSingleDigit(const char* inputDate) {
+      // 检查输入是否为空
+      if (inputDate == NULL) return NULL;
+      char* paddedDate = new char[11];
+      int cnt=0;
+      int cur=0;
+      for(int i=0;i<3;i++){
+        while(1){
+          if(inputDate[cnt]=='\0'||inputDate[cnt]=='-')break;
+          paddedDate[cur++]=inputDate[cnt];
+          cnt++;
+        }
+        cnt++;
+        if((i==1&&cur==6)||(i==2&&cur==9)){
+          paddedDate[cur]=paddedDate[cur-1];
+          paddedDate[cur-1]='0';
+          cur++;
+        }
+        paddedDate[cur++]='-';
+      }
+      paddedDate[cur-1]='\0';
+      return paddedDate;
+  }
 };

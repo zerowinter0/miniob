@@ -67,9 +67,15 @@ bool check_legal_date(std::string& date) {
 
 int DateType::compare(const Value &left, const Value &right) const
 {
-  ASSERT(left.attr_type() == AttrType::DATES && right.attr_type() == AttrType::DATES, "invalid type");
-  return common::compare_string(
-      (void *)left.value_.pointer_value_, left.length_, (void *)right.value_.pointer_value_, right.length_);
+  
+  ASSERT((left.attr_type() == AttrType::DATES||left.attr_type() == AttrType::CHARS) && (right.attr_type() == AttrType::DATES||right.attr_type() == AttrType::CHARS), "invalid type");
+    char* l_date=date_fix::padZeroForSingleDigit(left.value_.pointer_value_);
+    char* r_date=date_fix::padZeroForSingleDigit(right.value_.pointer_value_);
+    
+  int res=common::compare_string(l_date,10,r_date,10);
+  delete[] l_date;
+  delete[] r_date;
+  return res;
 }
 
 RC DateType::set_value_from_str(Value &val, const string &data) const
