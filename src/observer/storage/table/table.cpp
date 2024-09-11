@@ -162,7 +162,10 @@ RC Table::drop(std::string file_path)
             return RC::FILE_REMOVE;
         }
     }
-    return RC::SUCCESS;
+    //清除bufferpool操作在table对象析构时会做（上一层）
+    // BufferPoolManager &bpm = db_->buffer_pool_manager();
+    // rc=bpm.close_file(data_file.c_str());    
+    return rc;
 }
 
 

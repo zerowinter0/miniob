@@ -173,10 +173,10 @@ RC Db::drop_table(const char *table_name)
   rc = table->drop(path_);
   if (rc != RC::SUCCESS) {
     LOG_ERROR("Failed to drop table %s.", table_name);
-    delete table;
     return rc;
   }
   opened_tables_.erase(table_name);
+  delete table;
   LOG_INFO("Drop table success. table name=%s", table_name);
   return RC::SUCCESS;
 }
