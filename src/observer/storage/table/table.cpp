@@ -148,8 +148,8 @@ RC Table::remove(const char *path, const char *name, const char *base_dir)
 
   // 删除所有索引，索引位于文件indexfile
   for (Index *index : indexes_) {
-    index->close();
-    std::string index_file = table_index_file(base_dir, name(), index->index_meta().name());
+    ((BplusTreeHandler *)index)->close();
+    std::string index_file = table_index_file(base_dir, name, index->index_meta().name());
     if(unlink(index_file.c_str()) != 0) {
         LOG_ERROR("Failed to remove index file=%s, errno=%d", index_file.c_str(), errno);
         return RC::GENERIC_ERROR;
