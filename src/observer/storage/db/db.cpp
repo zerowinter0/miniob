@@ -101,6 +101,42 @@ RC Db::create_table(const char *table_name, int attribute_count, const AttrInfoS
   return RC::SUCCESS;
 }
 
+
+RC Db::drop_table(const char *table_name)
+{
+  RC rc = RC::SUCCESS;
+
+  // 检查表是否已经打开
+  if (opened_tables_.count(table_name) == 0) {
+    LOG_WARN("Table %s does not exist.", table_name);
+    return RC::SCHEMA_TABLE_NOT_EXIST;
+  }
+
+  // 获取表的指针
+  Table *table = opened_tables_[table_name];
+
+  // 获取表的文件路径
+  std::string table_file_path = table_meta_file(path_.c_str(), table_name);
+
+  // 先关闭并释放表对象资源
+  // table->close();
+  delete table;
+
+  // 从 opened_tables_ map 中删除条目
+  opened_tables_.erase(table_name);
+
+  // 删除表的元数据文件以及表文件（假设有个方法可以删除文件）
+  rc = table->remove(table_file_path.c_str(), table_name, path_.c_str());
+  if (rc != RC::SUCCESS) {
+    LOG_ERROR("Failed to remove table %s.", table_name);
+    return rc;
+  }
+
+  LOG_INFO("Drop table success. table name=%s", table_name);
+  return RC::SUCCESS;
+}
+
+
 Table *Db::find_table(const char *table_name) const
 {
   std::unordered_map<std::string, Table *>::const_iterator iter = opened_tables_.find(table_name);

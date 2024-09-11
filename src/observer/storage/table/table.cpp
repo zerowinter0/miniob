@@ -126,6 +126,41 @@ RC Table::create(int32_t table_id,
   return rc;
 }
 
+RC Table::remove(const char *path, const char *name, const char *base_dir)
+{
+  // 刷新脏页，防止再次写回磁盘
+  sync();
+
+  RC rc = RC::SUCCESS;
+
+  // 尝试删除表的元数据文件
+  if (unlink(path)!=0) {
+    LOG_ERROR("Failed to remove table meta file. file name=%s, errmsg=%s", path, strerror(errno));
+    return RC::GENERIC_ERROR;
+  }
+
+  // 删除表的数据文件
+  if (unlink(table_data_file(base_dir, name).c_str())!=0) {
+    LOG_ERROR("Failed to remove table data file. file name=%s, errmsg=%s", base_dir, strerror(errno));
+    return RC::GENERIC_ERROR;
+
+  }
+
+  // 删除所有索引，索引位于文件indexfile
+  for (Index *index : indexes_) {
+    index->close();
+    std::string index_file = table_index_file(base_dir, name(), index->index_meta().name());
+    if(unlink(index_file.c_str()) != 0) {
+        LOG_ERROR("Failed to remove index file=%s, errno=%d", index_file.c_str(), errno);
+        return RC::GENERIC_ERROR;
+    }
+  }
+
+  LOG_INFO("Successfully removed table %s and its files", table_meta_.name());
+  return RC::SUCCESS;
+}
+
+
 RC Table::open(const char *meta_file, const char *base_dir)
 {
   // 加载元数据文件
