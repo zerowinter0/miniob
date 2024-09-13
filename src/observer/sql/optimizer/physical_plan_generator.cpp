@@ -87,6 +87,10 @@ RC PhysicalPlanGenerator::create(LogicalOperator &logical_operator, unique_ptr<P
       return create_plan(static_cast<GroupByLogicalOperator &>(logical_operator), oper);
     } break;
 
+    // case LogicalOperatorType::AGGREGATE: {
+    //   return create_plan(static_cast<AggregateLogicalOperator &>(logical_operator), oper);
+    // } break;
+
     default: {
       ASSERT(false, "unknown logical operator type");
       return RC::INVALID_ARGUMENT;
