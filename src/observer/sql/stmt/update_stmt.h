@@ -45,6 +45,10 @@ public:
   {
     return value_amount_;
   }
+  StmtType type() const override
+  {
+    return StmtType::UPDATE;
+  }
 
 private:
   Table *table_ = nullptr;

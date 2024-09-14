@@ -54,18 +54,9 @@ RC UpdatePhysicalOperator::next()
 
     RowTuple *row_tuple = static_cast<RowTuple *>(tuple);
     Record &record = row_tuple->record();
-
-    // // 更新记录字段的值
-    // rc = update_record(record);
-    // if (rc != RC::SUCCESS) {
-    //   LOG_WARN("failed to update record: %s", strrc(rc));
-    //   return rc;
-    // }
-
-    // 调用事务的更新记录函数
     rc = trx_->update_record(table_, record);
     if (rc != RC::SUCCESS) {
-      LOG_WARN("failed to update record in transaction: %s", strrc(rc));
+      LOG_WARN("failed to update record: %s", strrc(rc));
       return rc;
     }
   }
@@ -80,19 +71,3 @@ RC UpdatePhysicalOperator::close()
   }
   return RC::SUCCESS;
 }
-
-// RC UpdatePhysicalOperator::update_record(Record &record)
-// {
-//   // 遍历需要更新的列，并更新对应的值
-//   for (const auto &update_item : update_items_) {
-//     const FieldMeta *field_meta = table_->table_meta().field(update_item.column_name);
-//     if (nullptr == field_meta) {
-//       LOG_WARN("invalid column name: %s", update_item.column_name.c_str());
-//       return RC::SCHEMA_FIELD_MISSING;
-//     }
-
-//     // 根据字段类型更新值（这里只是简单示例，实际可能涉及类型检查、转换等）
-//     memcpy(record.data() + field_meta->offset(), update_item.new_value.c_str(), field_meta->len());
-//   }
-//   return RC::SUCCESS;
-// }
